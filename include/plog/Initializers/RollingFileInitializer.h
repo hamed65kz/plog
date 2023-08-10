@@ -2,6 +2,7 @@
 #include <plog/Appenders/RollingFileAppender.h>
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Formatters/CsvFormatter.h>
+#include <plog/Formatters/MyConsoleFormatter.h>
 #include <plog/Init.h>
 #include <cstring>
 

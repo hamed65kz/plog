@@ -1,6 +1,61 @@
 #pragma once
 #include <plog/Appenders/ConsoleAppender.h>
 #include <plog/WinApi.h>
+#include <iostream>
+
+#define FOREGROUND_BLUE      0x0001 // text color contains blue.
+#define FOREGROUND_GREEN     0x0002 // text color contains green.
+#define FOREGROUND_RED       0x0004 // text color contains red.
+#define FOREGROUND_INTENSITY 0x0008 // text color is intensified.
+#define BACKGROUND_BLUE      0x0010 // background color contains blue.
+#define BACKGROUND_GREEN     0x0020 // background color contains green.
+#define BACKGROUND_RED       0x0040 // background color contains red.
+#define BACKGROUND_INTENSITY 0x0080 // background color is intensified.
+enum WinConsoleColors
+{
+   BlackFore   = 0,
+   MaroonFore  = FOREGROUND_RED,
+   GreenFore   = FOREGROUND_GREEN,
+   NavyFore    = FOREGROUND_BLUE,
+   TealFore    = FOREGROUND_GREEN | FOREGROUND_BLUE,
+   OliveFore   = FOREGROUND_RED | FOREGROUND_GREEN,
+   PurpleFore  = FOREGROUND_RED | FOREGROUND_BLUE,
+   GrayFore    = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+   SilverFore  = FOREGROUND_INTENSITY,
+   RedFore     = FOREGROUND_INTENSITY | FOREGROUND_RED,
+   LimeFore    = FOREGROUND_INTENSITY | FOREGROUND_GREEN,
+   BlueFore    = FOREGROUND_INTENSITY | FOREGROUND_BLUE,
+   AquaFore    = FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_BLUE,
+   YellowFore  = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN,
+   FuchsiaFore = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE,
+   WhiteFore   = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+
+   BlackBack   = 0,
+   MaroonBack  = BACKGROUND_RED,
+   GreenBack   = BACKGROUND_GREEN,
+   NavyBack    = BACKGROUND_BLUE,
+   TealBack    = BACKGROUND_GREEN | BACKGROUND_BLUE,
+   OliveBack   = BACKGROUND_RED | BACKGROUND_GREEN,
+   PurpleBack  = BACKGROUND_RED | BACKGROUND_BLUE,
+   GrayBack    = BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE,
+   SilverBack  = BACKGROUND_INTENSITY,
+   RedBack     = BACKGROUND_INTENSITY | BACKGROUND_RED,
+   LimeBack    = BACKGROUND_INTENSITY | BACKGROUND_GREEN,
+   BlueBack    = BACKGROUND_INTENSITY | BACKGROUND_BLUE,
+   AquaBack    = BACKGROUND_INTENSITY | BACKGROUND_GREEN | BACKGROUND_BLUE,
+   YellowBack  = BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN,
+   FuchsiaBack = BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_BLUE,
+   WhiteBack   = BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE,
+};
+
+
+    #define RGB_WhiteOnBlack   "\x1B[38;2;255;255;255m";
+    #define RGB_RedOnBlack     "\x1B[38;2;255;102;102m";
+    #define RGB_BlueOnBlack    "\x1B[38;2;0;128;255m";
+    #define RGB_GrayOnBlack    "\x1B[38;2;120;120;120";
+    #define RGB_YellowOnBlack  "\x1B[38;2;255;225;0m";
+    #define RGB_BlackOnRed  "\x1b[41;30m";
+
 
 namespace plog
 {
@@ -35,6 +90,11 @@ namespace plog
             util::nstring str = Formatter::format(record);
             util::MutexLock lock(this->m_mutex);
 
+            util::nostringstream ss;
+            ss<<"haha";
+
+            this->writestr(ss.str());
+
             setColor(record.getSeverity());
             this->writestr(str);
             resetColor();
@@ -49,37 +109,51 @@ namespace plog
                 {
 #ifdef _WIN32
                 case fatal:
-                    SetConsoleTextAttribute(this->m_outputHandle, foreground::kRed | foreground::kGreen | foreground::kBlue | foreground::kIntensity | background::kRed); // white on red background
+                    SetConsoleTextAttribute(this->m_outputHandle, static_cast<WORD>(WinConsoleColors::RedBack |  WinConsoleColors::BlackFore)); // white on red
                     break;
 
                 case error:
-                    SetConsoleTextAttribute(this->m_outputHandle, static_cast<WORD>(foreground::kRed | foreground::kIntensity | (m_originalAttr & 0xf0))); // red
+                    SetConsoleTextAttribute(this->m_outputHandle, static_cast<WORD>(WinConsoleColors::BlackBack |  WinConsoleColors::RedFore)); // red
                     break;
 
                 case warning:
-                    SetConsoleTextAttribute(this->m_outputHandle, static_cast<WORD>(foreground::kRed | foreground::kGreen | foreground::kIntensity | (m_originalAttr & 0xf0))); // yellow
+                    SetConsoleTextAttribute(this->m_outputHandle, static_cast<WORD>(WinConsoleColors::BlackBack |  WinConsoleColors::YellowFore)); // yellow
                     break;
 
                 case debug:
+                    SetConsoleTextAttribute(this->m_outputHandle, static_cast<WORD>(WinConsoleColors::BlackBack |  WinConsoleColors::GrayFore)); // cyan
+                    break;
+
                 case verbose:
-                    SetConsoleTextAttribute(this->m_outputHandle, static_cast<WORD>(foreground::kGreen | foreground::kBlue | foreground::kIntensity | (m_originalAttr & 0xf0))); // cyan
+                    SetConsoleTextAttribute(this->m_outputHandle, static_cast<WORD>(WinConsoleColors::BlackBack |  WinConsoleColors::SilverFore)); // cyan
+                    break;
+
+                case info:
+                    SetConsoleTextAttribute(this->m_outputHandle, static_cast<WORD>(WinConsoleColors::BlackBack |  WinConsoleColors::BlueFore)); // cyan
                     break;
 #else
                 case fatal:
-                    this->m_outputStream << "\x1B[97m\x1B[41m"; // white on red background
+                    this->m_outputStream << RGB_BlackOnRed ; // white on red background
                     break;
 
                 case error:
-                    this->m_outputStream << "\x1B[91m"; // red
+                    this->m_outputStream << RGB_RedOnBlack; // red
                     break;
 
                 case warning:
-                    this->m_outputStream << "\x1B[93m"; // yellow
+                    this->m_outputStream << RGB_YellowOnBlack; // yellow
                     break;
 
                 case debug:
+                    this->m_outputStream << RGB_WhiteOnBlack; // cyan
+                    break;
+
                 case verbose:
-                    this->m_outputStream << "\x1B[96m"; // cyan
+                    this->m_outputStream << RGB_GrayOnBlack; // cyan
+                    break;
+
+                case info:
+                    this->m_outputStream << RGB_BlueOnBlack; // cyan
                     break;
 #endif
                 default:
