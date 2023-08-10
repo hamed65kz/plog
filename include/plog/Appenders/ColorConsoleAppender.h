@@ -2,6 +2,7 @@
 #include <plog/Appenders/ConsoleAppender.h>
 #include <plog/WinApi.h>
 #include <iostream>
+#include <vector>
 
 #define FOREGROUND_BLUE      0x0001 // text color contains blue.
 #define FOREGROUND_GREEN     0x0002 // text color contains green.
@@ -84,20 +85,48 @@ namespace plog
             : ConsoleAppender<Formatter>(outStream)
         {}
 #endif
+        std::vector<std::wstring> splitBasedColor(util::nstring str)
+        {
+            std::vector<std::wstring> segments;
 
+
+            wchar_t start  = '^';
+            wchar_t end  = '&';
+
+            auto ind1 = str.find_first_of(start,0);
+            auto ind2 = str.find_first_of(end,0);
+            while(ind1 >0 && ind2>0 && ind1< str.size()){
+
+                segments.push_back(str.substr(0,ind1));
+                segments.push_back(str.substr(ind1,ind2-ind1));
+                str.erase(0,ind2+1);
+                ind1 = str.find_first_of(start,0);
+                ind2 = str.find_first_of(end,0);
+            }
+             segments.push_back(str);
+
+            return segments;
+        }
         virtual void write(const Record& record) PLOG_OVERRIDE
         {
             util::nstring str = Formatter::format(record);
             util::MutexLock lock(this->m_mutex);
-
-            util::nostringstream ss;
-            ss<<"haha";
-
-            this->writestr(ss.str());
-
-            setColor(record.getSeverity());
-            this->writestr(str);
-            resetColor();
+            std::vector<std::wstring> segs = splitBasedColor(str);
+            for (int i=0;i<segs.size();i++) {
+                std::wstring s=segs[i];
+                if(s[0] == '^'){
+                    s = s.erase(0,1);
+                    setColor(record.getSeverity());
+                }
+                else{
+                     setColor(Severity::verbose);
+                }
+                this->writestr(s);
+                resetColor();
+            }
+            //setColor(record.getSeverity());
+            //this->writestr(str);
+            //resetColor();
         }
 
     protected:

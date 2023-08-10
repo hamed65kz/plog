@@ -32,7 +32,7 @@ namespace plog
         case debug:
             return "DEBUG";
         case verbose:
-            return "VERB";
+            return "Trace";
         default:
             return "NONE";
         }
