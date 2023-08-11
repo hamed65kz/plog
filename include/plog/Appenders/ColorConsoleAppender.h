@@ -12,6 +12,18 @@
 #define BACKGROUND_GREEN     0x0020 // background color contains green.
 #define BACKGROUND_RED       0x0040 // background color contains red.
 #define BACKGROUND_INTENSITY 0x0080 // background color is intensified.
+
+
+#define RGB_WhiteOnBlack   "\x1B[38;2;255;255;255m"
+#define RGB_RedOnBlack     "\x1B[38;2;255;102;102m"
+#define RGB_BlueOnBlack    "\x1B[38;2;0;128;255m"
+#define RGB_GrayOnBlack    "\x1B[38;2;120;120;120"
+#define RGB_YellowOnBlack  "\x1B[38;2;255;225;0m"
+#define RGB_BlackOnRed  "\x1b[41;30m"
+
+#define START_TO_COLOR_DELIMTER  '^'
+#define END_OF_COLOR_DELIMTER  '&'
+
 enum WinConsoleColors
 {
    BlackFore   = 0,
@@ -49,17 +61,9 @@ enum WinConsoleColors
    WhiteBack   = BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE,
 };
 
-
-    #define RGB_WhiteOnBlack   "\x1B[38;2;255;255;255m";
-    #define RGB_RedOnBlack     "\x1B[38;2;255;102;102m";
-    #define RGB_BlueOnBlack    "\x1B[38;2;0;128;255m";
-    #define RGB_GrayOnBlack    "\x1B[38;2;120;120;120";
-    #define RGB_YellowOnBlack  "\x1B[38;2;255;225;0m";
-    #define RGB_BlackOnRed  "\x1b[41;30m";
-
-
 namespace plog
 {
+
     template<class Formatter>
     class PLOG_LINKAGE_HIDDEN ColorConsoleAppender : public ConsoleAppender<Formatter>
     {
@@ -86,25 +90,19 @@ namespace plog
         {}
 #endif
         std::vector<std::wstring> splitBasedColor(util::nstring str)
-        {
+        {         
             std::vector<std::wstring> segments;
-
-
-            wchar_t start  = '^';
-            wchar_t end  = '&';
-
-            auto ind1 = str.find_first_of(start,0);
-            auto ind2 = str.find_first_of(end,0);
+            auto ind1 = str.find_first_of(START_TO_COLOR_DELIMTER,0);
+            auto ind2 = str.find_first_of(END_OF_COLOR_DELIMTER,0);
             while(ind1 >0 && ind2>0 && ind1< str.size()){
 
                 segments.push_back(str.substr(0,ind1));
                 segments.push_back(str.substr(ind1,ind2-ind1));
                 str.erase(0,ind2+1);
-                ind1 = str.find_first_of(start,0);
-                ind2 = str.find_first_of(end,0);
+                ind1 = str.find_first_of(START_TO_COLOR_DELIMTER,0);
+                ind2 = str.find_first_of(END_OF_COLOR_DELIMTER,0);
             }
-             segments.push_back(str);
-
+            segments.push_back(str);
             return segments;
         }
         virtual void write(const Record& record) PLOG_OVERRIDE
@@ -114,7 +112,7 @@ namespace plog
             std::vector<std::wstring> segs = splitBasedColor(str);
             for (int i=0;i<segs.size();i++) {
                 std::wstring s=segs[i];
-                if(s[0] == '^'){
+                if(s[0] == START_TO_COLOR_DELIMTER){
                     s = s.erase(0,1);
                     setColor(record.getSeverity());
                 }
