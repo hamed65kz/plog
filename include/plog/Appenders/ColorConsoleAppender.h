@@ -17,7 +17,7 @@
 #define RGB_WhiteOnBlack   "\x1B[38;2;255;255;255m"
 #define RGB_RedOnBlack     "\x1B[38;2;255;102;102m"
 #define RGB_BlueOnBlack    "\x1B[38;2;0;128;255m"
-#define RGB_GrayOnBlack    "\x1B[38;2;120;120;120"
+#define RGB_GrayOnBlack    "\x1B[38;2;150;150;150m"
 #define RGB_YellowOnBlack  "\x1B[38;2;255;225;0m"
 #define RGB_BlackOnRed  "\x1b[41;30m"
 
@@ -89,9 +89,9 @@ namespace plog
             : ConsoleAppender<Formatter>(outStream)
         {}
 #endif
-        std::vector<std::wstring> splitBasedColor(util::nstring str)
+        std::vector<util::nstring> splitBasedColor(util::nstring str)
         {         
-            std::vector<std::wstring> segments;
+            std::vector<util::nstring> segments;
             auto ind1 = str.find_first_of(START_TO_COLOR_DELIMTER,0);
             auto ind2 = str.find_first_of(END_OF_COLOR_DELIMTER,0);
             while(ind1 >0 && ind2>0 && ind1< str.size()){
@@ -109,9 +109,9 @@ namespace plog
         {
             util::nstring str = Formatter::format(record);
             util::MutexLock lock(this->m_mutex);
-            std::vector<std::wstring> segs = splitBasedColor(str);
+            std::vector<util::nstring> segs = splitBasedColor(str);
             for (int i=0;i<segs.size();i++) {
-                std::wstring s=segs[i];
+                util::nstring s=segs[i];
                 if(s[0] == START_TO_COLOR_DELIMTER){
                     s = s.erase(0,1);
                     setColor(record.getSeverity());

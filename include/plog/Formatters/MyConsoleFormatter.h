@@ -35,10 +35,10 @@ namespace plog
             std::string funcstr = record.getFunc();
             funcstr = truncate(funcstr,37,true);
 
-            char msg[500];
-            sprintf(msg,"%ls",record.getMessage());
+            char msg[500]={0};
+            sprintf(msg,"%s",record.getMessage());
             std::string msgstr = std::string(msg);
-            msgstr = truncate(msgstr,120,true);
+            msgstr = truncate(msgstr,110,true);
 
             util::nostringstream ss;
             //ss << t.tm_year + 1900 << "-" << std::setfill(PLOG_NSTR('0')) << std::setw(2) << t.tm_mon + 1 << PLOG_NSTR("-") << std::setfill(PLOG_NSTR('0')) << std::setw(2) << t.tm_mday << PLOG_NSTR(" ");
