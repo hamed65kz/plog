@@ -26,7 +26,19 @@ namespace plog
             }
             return str;
         }
-
+       static  std::wstring& truncate(std::wstring& str, size_t width, bool show_ellipsis=true) {
+            if (str.length() > width) {
+                if (show_ellipsis) {
+                    str.resize(width);
+                    return str.append(L"...");
+                }
+                else {
+                    str.resize(width);
+                    return str;
+               }
+            }
+            return str;
+        }
         static util::nstring format(const Record& record)
         {
             tm t;
@@ -35,11 +47,15 @@ namespace plog
             std::string funcstr = record.getFunc();
             funcstr = truncate(funcstr,37,true);
 
+#if PLOG_CHAR_IS_UTF8
             char msg[500]={0};
             sprintf(msg,"%s",record.getMessage());
             std::string msgstr = std::string(msg);
             msgstr = truncate(msgstr,110,true);
-
+#else
+            std::wstring ws(record.getMessage());
+            std::wstring msgstr = truncate(ws,110,true);
+#endif
             util::nostringstream ss;
             //ss << t.tm_year + 1900 << "-" << std::setfill(PLOG_NSTR('0')) << std::setw(2) << t.tm_mon + 1 << PLOG_NSTR("-") << std::setfill(PLOG_NSTR('0')) << std::setw(2) << t.tm_mday << PLOG_NSTR(" ");
             ss << std::setfill(PLOG_NSTR('0')) << std::setw(2) << t.tm_hour << PLOG_NSTR(":") << std::setfill(PLOG_NSTR('0')) << std::setw(2) << t.tm_min << PLOG_NSTR(":") << std::setfill(PLOG_NSTR('0')) << std::setw(2) << t.tm_sec << PLOG_NSTR(".") << std::setfill(PLOG_NSTR('0')) << std::setw(3) << static_cast<int> (record.getTime().millitm) << PLOG_NSTR(" ");
