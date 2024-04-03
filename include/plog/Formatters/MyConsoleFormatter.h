@@ -39,7 +39,7 @@ namespace plog
             }
             return str;
         }
-        static util::nstring format(const Record& record)
+       static util::nstring format(const Record& record)
         {
             tm t;
             util::localtime_s(&t, &record.getTime().time);
@@ -48,8 +48,8 @@ namespace plog
             funcstr = truncate(funcstr,37,true);
 
 #if PLOG_CHAR_IS_UTF8
-            char msg[500]={0};
-            sprintf(msg,"%s",record.getMessage());
+            char msg[300]={0};
+            snprintf(msg,300,"%s",record.getMessage());
             std::string msgstr = std::string(msg);
             msgstr = truncate(msgstr,110,true);
 #else
